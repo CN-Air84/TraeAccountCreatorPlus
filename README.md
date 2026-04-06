@@ -1,7 +1,9 @@
 # TraeAccountCreatorPlus
 S-Trespassing/Trae-Account-Creator 的小幅修改版。
 
-删了周年礼包获取，删减了一些print，从mail.cx迁移到temporam，添加真·五光十色的输出，，别的修改点忘了。
+删了周年礼包获取，删减了一些print，从mail.cx迁移到temporam，添加真·五光十色的输出，，
+
+额，别的修改点忘了。
 
 基于 Playwright + 临时邮箱，支持单账号注册与批量并发注册，并在完成后导出账号信息和 Cookie。
 
@@ -50,6 +52,12 @@ CD越低，额度开销越大，同时效率越高。
 ✅ 同意条款：继续使用即表示您已理解并同意承担相应风险
 
 ⚠️ 如果您不同意以上条款，请立即停止使用本工具 ⚠️
+
+🙏 项目来源
+---
+本项目基于 [Trae-Account-Creator](https://github.com/S-Trespassing/Trae-Account-Creator) 魔改而来。
+
+同时一定程度上参考借鉴了[TAC的另一个已死的改版，TraeAccountRegister](https://github.com/kggzs/TraeAccountRegister)。
 
 常见问题
 ---
