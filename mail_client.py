@@ -3,10 +3,13 @@ import random
 import string
 import re
 import asyncio
+import configparser
+import os
+import json
 
 # Config
 API_BASE_URL = "https://api.temporam.com/v1"
-API_KEY = "白酒啤酒葡萄酒又是九月九"#自行填入
+API_KEY = ""#自行填入
 
 #https://temporam.com/zh/dashboard
 
@@ -30,6 +33,7 @@ class AsyncMailClient:
         self.rate_remaining = None
         self.rate_reset = None
         self.quota_remaining = None
+        self.config_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "config.ini")
 
     def _print_rate_info(self, response):
         self.rate_limit = response.headers.get("X-RateLimit-Limit")
@@ -51,7 +55,7 @@ class AsyncMailClient:
         print(f"[API错误] {msg}")
 
     async def start(self):
-        """Initialize Async HTTP Client and fetch available domains"""
+        """Initialize Async HTTP Client and load available domains from config"""
         self.client = httpx.AsyncClient(
             headers={
                 "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
@@ -59,10 +63,44 @@ class AsyncMailClient:
             timeout=30.0
         )
         #print("邮箱客户端已初始化...")
+        await self._load_domains_from_config()
+
+    async def _load_domains_from_config(self):
+        """Load domains from config file, fetch from API if not exists or empty"""
+        config = configparser.ConfigParser()
+        if os.path.exists(self.config_path):
+            try:
+                config.read(self.config_path, encoding='utf-8')
+                if 'domains' in config and 'list' in config['domains']:
+                    domains_str = config['domains']['list']
+                    if domains_str:
+                        self.available_domains = json.loads(domains_str)
+                        if self.available_domains:
+                            #print(f"从配置文件加载了 {len(self.available_domains)} 个可用域名")
+                            return
+            except Exception as e:
+                print(f"读取配置文件失败: {e}")
+        
+        # 配置文件不存在或没有有效域名，从API获取
+        print("配置文件无效或不存在，从API获取域名列表...")
         await self._fetch_domains()
 
+    def _save_domains_to_config(self, domains):
+        """Save domains list to config file"""
+        config = configparser.ConfigParser()
+        config['domains'] = {
+            'list': json.dumps(domains, ensure_ascii=False)
+        }
+        try:
+            with open(self.config_path, 'w', encoding='utf-8') as f:
+                config.write(f)
+            print(f"已将 {len(domains)} 个域名保存到配置文件: {self.config_path}")
+        except Exception as e:
+            print(f"保存配置文件失败: {e}")
+
     async def _fetch_domains(self):
-        """Fetch available domains from API"""
+        """Fetch available domains from API and save to config"""
+        assert self.client is not None, "HTTP client not initialized"
         url = f"{API_BASE_URL}/domains"
         try:
             response = await self.client.get(url, headers=self.api_headers)
@@ -73,6 +111,9 @@ class AsyncMailClient:
                     self.available_domains = [item["domain"] for item in data["data"] if "domain" in item and ".edu" in item["domain"] and "mona" in item["domain"] and "rs" not in item["domain"]]
                     
                     #print(f"已获取可用域名：{self.available_domains}")
+                    # 保存到配置文件
+                    if self.available_domains:
+                        self._save_domains_to_config(self.available_domains)
                 else:
                     print("获取域名列表失败")
             else:
@@ -97,6 +138,7 @@ class AsyncMailClient:
         """Check for new emails"""
         if not self.email_address:
             return
+        assert self.client is not None, "HTTP client not initialized"
 
         try:
             response = await self.client.get(
@@ -136,6 +178,7 @@ class AsyncMailClient:
             self.processed_ids.add(msg_id)
 
     async def _fetch_and_parse_content(self, msg_id):
+        assert self.client is not None, "HTTP client not initialized"
         url = f"{API_BASE_URL}/emails/{msg_id}"
         try:
             response = await self.client.get(url, headers=self.api_headers)

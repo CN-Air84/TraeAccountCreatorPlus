@@ -56,7 +56,6 @@ async def run_registration(CD,thread_num):
     try:
         # 1. Setup Mail
         await mail_client.start()
-        email = mail_client.get_email()
         password = generate_password()
 
         # 2. Setup Browser
@@ -73,6 +72,13 @@ async def run_registration(CD,thread_num):
             await page.goto("https://www.trae.ai/sign-up", wait_until="domcontentloaded", timeout=6000)
             await page.wait_for_load_state("networkidle", timeout=30000)
             await asyncio.sleep(2)
+
+            # 4. 成功打开注册页面后，调用API获取邮箱
+            print(colors[thread_num-1] + f"[线程{thread_num}] 注册页面加载成功，正在获取邮箱...")
+            email = mail_client.get_email()
+            if not email:
+                print(colors[thread_num-1] + f"[线程{thread_num}] 获取邮箱失败，无可用域名")
+                return
             
             # Fill Email
             email_input = page.get_by_role("textbox", name="Email")
@@ -84,12 +90,13 @@ async def run_registration(CD,thread_num):
             # Poll for code
             verification_code = None
             for i in range(retry_num): # 60 seconds max
+                await asyncio.sleep(CD)
                 await mail_client.check_emails()
                 if mail_client.last_verification_code:
                     verification_code = mail_client.last_verification_code
                     break
                 print(colors[thread_num-1] + f"[线程{thread_num}] 正在检查邮箱... ({i+1}/{retry_num})")
-                await asyncio.sleep(CD)
+                
 
             if not verification_code:
                 print(colors[thread_num-1] + f"[线程{thread_num}] 60秒内未收到验证码。")
@@ -214,7 +221,7 @@ if __name__ == "__main__":
     #     asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
     total = 1
     concurrency = 1
-    mailscheckcd= 10
+    mailscheckcd = 10
     if len(sys.argv) > 1:
         try:
             total = int(sys.argv[1])
@@ -227,4 +234,10 @@ if __name__ == "__main__":
         except ValueError:
             print("参数错误：请输入并发数量（整数）。")
             sys.exit(1)
-    asyncio.run(run_batch(total, concurrency,mailscheckcd))
+    if len(sys.argv) > 3:
+        try:
+            mailscheckcd = int(sys.argv[3])
+        except ValueError:
+            print("参数错误：请输入邮件检查CD（整数）。")
+            sys.exit(1)
+    asyncio.run(run_batch(total, concurrency, mailscheckcd))
