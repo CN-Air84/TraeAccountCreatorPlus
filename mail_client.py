@@ -126,7 +126,7 @@ class AsyncMailClient:
                 if data.get("error") is False and isinstance(data.get("data"), list):
                     self.available_domains = [item["domain"] for item in data["data"] if "domain" in item and ".edu" in item["domain"] and "mona" in item["domain"] and "rs" not in item["domain"]]
                     
-                    #print(f"已获取可用域名：{self.available_domains}")
+                    print(f"已获取可用域名：{self.available_domains}")
                     # 保存到配置文件
                     if self.available_domains:
                         self._save_domains_to_config(self.available_domains)
