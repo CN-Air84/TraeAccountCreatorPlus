@@ -1,7 +1,7 @@
 
 # ——————Config——————
 API_BASE_URL = "https://api.temporam.com/v1"
-API_KEY = "tm_gpdjl7ocPrVa78_p_qtGF0WVZLvWv8Dj"#自行填入
+API_KEY = ""#自行填入
  #   https://temporam.com/zh/dashboard
 # ——————————————————
 
