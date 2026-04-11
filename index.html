@@ -1,0 +1,418 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Trae 账号注册</title>
+  <style>
+    :root {
+      --bg: #f4f1ea;
+      --card: #fffdf8;
+      --ink: #1f2937;
+      --muted: #6b7280;
+      --accent: #b45309;
+      --ok: #166534;
+      --bad: #991b1b;
+      --line: #e5e7eb;
+      --blue: #2563eb;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "Noto Serif SC", "Source Han Serif SC", "Songti SC", serif;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at 10% 10%, #efe6d9 0, transparent 35%),
+        radial-gradient(circle at 90% 90%, #f0e8dc 0, transparent 35%),
+        var(--bg);
+      min-height: 100vh;
+    }
+    .wrap {
+      max-width: 920px;
+      margin: 32px auto;
+      padding: 0 16px 24px;
+    }
+    .card {
+      background: var(--card);
+      border: 1px solid #efe9de;
+      border-radius: 14px;
+      padding: 18px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06);
+    }
+    h1 {
+      margin: 0 0 12px;
+      font-size: 28px;
+      letter-spacing: 1px;
+    }
+    .hint {
+      margin: 0 0 16px;
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.6;
+    }
+    .row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 12px;
+      align-items: center;
+    }
+    .row > * {
+      flex-shrink: 0;
+    }
+    label {
+      font-size: 14px;
+      color: var(--muted);
+    }
+    select, input, button {
+      font: inherit;
+      border-radius: 10px;
+      border: 1px solid var(--line);
+      padding: 8px 12px;
+      background: white;
+    }
+    input[type="number"] {
+      width: 80px;
+    }
+    button {
+      cursor: pointer;
+    }
+    button.primary {
+      border-color: transparent;
+      background: var(--accent);
+      color: #fff;
+    }
+    button.danger {
+      border-color: transparent;
+      background: var(--bad);
+      color: #fff;
+    }
+    button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+    .log-container {
+      border: 1px dashed #d6d3d1;
+      border-radius: 10px;
+      padding: 14px;
+      min-height: 200px;
+      max-height: 400px;
+      overflow-y: auto;
+      line-height: 1.85;
+      font-size: 14px;
+      background: #fff;
+      font-family: "Consolas", "Monaco", monospace;
+      margin-top: 12px;
+    }
+    .log-entry {
+      margin: 4px 0;
+      padding: 4px 8px;
+      border-radius: 4px;
+    }
+    .log-entry.info { color: var(--blue); }
+    .log-entry.success { color: var(--ok); }
+    .log-entry.fail { color: var(--bad); background: #fee2e2; }
+    .log-entry.warning { color: var(--accent); }
+    .log-entry.api { color: #7c3aed; }
+    .log-entry.detail { color: var(--muted); font-size: 12px; }
+    .stats {
+      margin-top: 12px;
+      display: grid;
+      grid-template-columns: repeat(5, minmax(100px, 1fr));
+      gap: 10px;
+    }
+    .pill {
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: 10px;
+      background: #fff;
+    }
+    .pill .k {
+      color: var(--muted);
+      font-size: 12px;
+      margin-bottom: 4px;
+    }
+    .pill .v {
+      font-size: 18px;
+      font-weight: 600;
+    }
+    .progress-bar {
+      margin-top: 12px;
+      height: 8px;
+      background: #e5e7eb;
+      border-radius: 4px;
+      overflow: hidden;
+    }
+    .progress-fill {
+      height: 100%;
+      background: var(--accent);
+      width: 0%;
+      transition: width 0.3s ease;
+    }
+    .foot {
+      margin-top: 10px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+    .config-section {
+      margin-bottom: 16px;
+      padding: 12px;
+      background: #f9fafb;
+      border-radius: 10px;
+      border: 1px solid var(--line);
+    }
+    .config-section h3 {
+      margin: 0 0 10px;
+      font-size: 16px;
+      color: var(--ink);
+    }
+    .api-input {
+      width: 100%;
+      padding: 8px 12px;
+      font-family: "Consolas", monospace;
+      font-size: 13px;
+    }
+    @media (max-width: 700px) {
+      .stats { grid-template-columns: repeat(2, minmax(100px, 1fr)); }
+      h1 { font-size: 24px; }
+      .row { flex-direction: column; align-items: stretch; }
+      input[type="number"] { width: 100%; }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="card">
+      <h1>Trae 账号注册</h1>
+      <p class="hint">配置 API Key 后，设置注册数量和并发数开始批量注册。系统会实时显示注册进度和结果。</p>
+
+      <div class="config-section">
+        <h3>⚙️ 配置</h3>
+        <div class="row" style="flex-direction: column; align-items: stretch;">
+          <label for="apiKey">Temporam API Key：</label>
+          <input type="text" id="apiKey" class="api-input" placeholder="请输入从 https://temporam.com/zh/dashboard 获取的 API Key">
+        </div>
+      </div>
+
+      <div class="row">
+        <label for="total">注册数量：</label>
+        <input type="number" id="total" value="10" min="1" max="100">
+        
+        <label for="concurrency">并发数：</label>
+        <input type="number" id="concurrency" value="3" min="1" max="10">
+        
+        <label for="cd">检查 CD(s)：</label>
+        <input type="number" id="cd" value="10" min="1" max="60">
+        
+        <button id="startBtn" class="primary">开始注册</button>
+        <button id="stopBtn" class="danger" disabled>停止</button>
+        <button id="clearBtn">清空日志</button>
+      </div>
+
+      <div class="progress-bar">
+        <div id="progressFill" class="progress-fill"></div>
+      </div>
+
+      <div class="stats">
+        <div class="pill"><div class="k">总数</div><div id="totalCount" class="v">0</div></div>
+        <div class="pill"><div class="k">成功</div><div id="successCount" class="v">0</div></div>
+        <div class="pill"><div class="k">失败</div><div id="failCount" class="v">0</div></div>
+        <div class="pill"><div class="k">配额</div><div id="quotaCount" class="v">--</div></div>
+        <div class="pill"><div class="k">域名</div><div id="domainCount" class="v">--</div></div>
+      </div>
+
+      <div id="logContainer" class="log-container" aria-live="polite"></div>
+      
+      <div class="foot">
+        提示：注册成功后账号信息保存在 accounts.txt，Cookie 保存在 ./cookies 目录。并发数建议不超过 10，CD 建议 8-15 秒。
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const apiKeyInput = document.getElementById("apiKey");
+    const totalInput = document.getElementById("total");
+    const concurrencyInput = document.getElementById("concurrency");
+    const cdInput = document.getElementById("cd");
+    const startBtn = document.getElementById("startBtn");
+    const stopBtn = document.getElementById("stopBtn");
+    const clearBtn = document.getElementById("clearBtn");
+    const logContainer = document.getElementById("logContainer");
+    const progressFill = document.getElementById("progressFill");
+    const totalCountEl = document.getElementById("totalCount");
+    const successCountEl = document.getElementById("successCount");
+    const failCountEl = document.getElementById("failCount");
+    const quotaCountEl = document.getElementById("quotaCount");
+    const domainCountEl = document.getElementById("domainCount");
+
+    let isRunning = false;
+    let worker = null;
+
+    function addLog(message, type = "info") {
+      const entry = document.createElement("div");
+      entry.className = `log-entry ${type}`;
+      const timestamp = new Date().toLocaleTimeString("zh-CN", { hour12: false });
+      entry.textContent = `[${timestamp}] ${message}`;
+      logContainer.appendChild(entry);
+      logContainer.scrollTop = logContainer.scrollHeight;
+    }
+
+    function clearLogs() {
+      logContainer.innerHTML = "";
+    }
+
+    function updateStats(success, fail, total, quota, domains) {
+      successCountEl.textContent = String(success);
+      failCountEl.textContent = String(fail);
+      totalCountEl.textContent = `${success + fail}/${total}`;
+      
+      if (quota) quotaCountEl.textContent = quota;
+      if (domains) domainCountEl.textContent = `${domains}个`;
+      
+      const progress = total > 0 ? ((success + fail) / total) * 100 : 0;
+      progressFill.style.width = `${progress}%`;
+    }
+
+    function parseApiInfo(line) {
+      const quotaMatch = line.match(/\[API\]剩余配额：\s*(\S+)/);
+      if (quotaMatch) {
+        quotaCountEl.textContent = quotaMatch[1];
+      }
+      
+      const domainsMatch = line.match(/从配置文件加载了\s*(\d+)\s*个可用域名/);
+      if (domainsMatch) {
+        domainCountEl.textContent = `${domainsMatch[1]}个 (缓存)`;
+      }
+      
+      const saveMatch = line.match(/已将\s*(\d+)\s*个域名保存到配置文件/);
+      if (saveMatch) {
+        domainCountEl.textContent = `${saveMatch[1]}个 (新获取)`;
+      }
+    }
+
+    function formatLogLine(line) {
+      if (line.includes("[API]")) return { text: line, type: "api" };
+      if (line.includes("[API 错误]")) return { text: line, type: "fail" };
+      if (line.includes("成功")) return { text: line, type: "success" };
+      if (line.includes("失败")) return { text: line, type: "fail" };
+      if (line.includes("错误") || line.includes("异常")) return { text: line, type: "fail" };
+      if (line.includes("警告")) return { text: line, type: "warning" };
+      return { text: line, type: "detail" };
+    }
+
+    async function startRegistration() {
+      const apiKey = apiKeyInput.value.trim();
+      if (!apiKey) {
+        addLog("错误：请先填写 API Key", "fail");
+        return;
+      }
+
+      const total = parseInt(totalInput.value);
+      const concurrency = parseInt(concurrencyInput.value);
+      const cd = parseInt(cdInput.value);
+
+      if (isNaN(total) || total <= 0) {
+        addLog("错误：注册数量必须大于 0", "fail");
+        return;
+      }
+
+      if (isNaN(concurrency) || concurrency <= 0) {
+        addLog("错误：并发数必须大于 0", "fail");
+        return;
+      }
+
+      if (isNaN(cd) || cd < 1) {
+        addLog("错误：检查 CD 必须大于等于 1 秒", "fail");
+        return;
+      }
+
+      isRunning = true;
+      startBtn.disabled = true;
+      stopBtn.disabled = false;
+      totalInput.disabled = true;
+      concurrencyInput.disabled = true;
+      cdInput.disabled = true;
+      apiKeyInput.disabled = true;
+
+      clearLogs();
+      addLog(`开始批量注册，总数：${total}，并发：${concurrency}，CD：${cd}s`, "info");
+      updateStats(0, 0, total, null, null);
+
+      try {
+        const response = await fetch("/api/register", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            api_key: apiKey,
+            total: total,
+            concurrency: concurrency,
+            cd: cd
+          })
+        });
+
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}`);
+        }
+
+        const reader = response.body.getReader();
+        const decoder = new TextDecoder();
+        let buffer = "";
+        let success = 0;
+        let fail = 0;
+
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+
+          buffer += decoder.decode(value, { stream: true });
+          const lines = buffer.split("\n");
+          buffer = lines.pop() || "";
+
+          for (const line of lines) {
+            if (!line.trim()) continue;
+            
+            parseApiInfo(line);
+            const logData = formatLogLine(line);
+            addLog(logData.text, logData.type);
+
+            if (line.includes("成功")) success++;
+            if (line.includes("失败")) fail++;
+            
+            updateStats(success, fail, total, null, null);
+          }
+        }
+
+        addLog("全部完成！", "info");
+
+      } catch (error) {
+        addLog(`注册过程出错：${error.message}`, "fail");
+      } finally {
+        isRunning = false;
+        startBtn.disabled = false;
+        stopBtn.disabled = true;
+        totalInput.disabled = false;
+        concurrencyInput.disabled = false;
+        cdInput.disabled = false;
+        apiKeyInput.disabled = false;
+      }
+    }
+
+    async function stopRegistration() {
+      if (!isRunning) return;
+      
+      try {
+        await fetch("/api/stop", { method: "POST" });
+        addLog("正在停止...", "warning");
+      } catch (error) {
+        addLog(`停止失败：${error.message}`, "fail");
+      }
+    }
+
+    startBtn.addEventListener("click", startRegistration);
+    stopBtn.addEventListener("click", stopRegistration);
+    clearBtn.addEventListener("click", clearLogs);
+
+    addLog("系统已就绪，请配置 API Key 后开始注册", "info");
+  </script>
+</body>
+</html>

@@ -207,7 +207,8 @@ class RegisterGUI:
             self.threads.append(t)
 
     def _worker(self, worker_id, total, concurrency, cd):
-        python_exe = sys.executable
+        # 使用 'python' 命令而不是 sys.executable，确保使用正确的环境
+        python_exe = 'python'
 
         indices = list(range(worker_id, total + 1, concurrency))
 
