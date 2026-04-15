@@ -1,8 +1,5 @@
-# TraeAccountCreatorPlus
+# TraeAccountCreatorPlus（已停更）
 S-Trespassing/Trae-Account-Creator 的小幅修改版。
-
-
-已弃坑。
 
 temporam原先唯二两个可用的邮箱域名也被字节封了，本项目宣告停更，待某个有缘人再来续薪火。
 
